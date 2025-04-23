@@ -1,16 +1,16 @@
 // this interface is used for login using email and password
-export interface IBaseUser {
+export interface BaseUser {
   email: string;
   password: string;
 }
 
 // this interface is used for registering new user with name, email, password
-export interface INewUser extends IBaseUser {
+export interface NewUser extends BaseUser {
   name: string;
 }
 
 // this interface is used for user returned from database
-export interface IUser extends INewUser {
+export interface User extends NewUser {
   readonly id: number;
   created_at: Date;
 }

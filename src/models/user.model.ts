@@ -1,9 +1,9 @@
 import pool from "../config/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { INewUser, IUser } from "../types/user";
+import { NewUser, User } from "../types/user";
 
-export default class UserModel implements IUser {
+export default class UserModel implements User {
   constructor(
     public readonly id: number,
     public name: string,
@@ -13,8 +13,8 @@ export default class UserModel implements IUser {
   ) {}
 
   //static method to create a new user
-  static async createUser(user: INewUser): Promise<UserModel> {
-    const result = await pool.query<IUser>(
+  static async createUser(user: NewUser): Promise<UserModel> {
+    const result = await pool.query<User>(
       `INSERT INTO users (name,email,password) VALUES($1,$2,$3) RETURNING *`,
       [user.name, user.email, user.password]
     );
@@ -26,7 +26,7 @@ export default class UserModel implements IUser {
 
   //static method to find an existing user
   static async findUser(email: string): Promise<UserModel | null> {
-    const result = await pool.query<IUser>(
+    const result = await pool.query<User>(
       `SELECT * FROM users WHERE email = $1`,
       [email]
     );
@@ -63,7 +63,7 @@ export default class UserModel implements IUser {
   }
 
   // method to return the user without the hashed password
-  toSafeObject(): Omit<IUser, "password"> {
+  toSafeObject(): Omit<User, "password"> {
     return {
       id: this.id,
       name: this.name,

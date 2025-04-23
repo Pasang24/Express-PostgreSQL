@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { IBaseUser, INewUser } from "../types/user";
+import { BaseUser, NewUser } from "../types/user";
 import UserModel from "../models/user.model";
 
-const registerUser = async (req: Request<{}, {}, INewUser>, res: Response) => {
+const registerUser = async (req: Request<{}, {}, NewUser>, res: Response) => {
   const { name, email, password } = req.body;
 
   //checking if user with same email already exists
@@ -24,7 +24,7 @@ const registerUser = async (req: Request<{}, {}, INewUser>, res: Response) => {
   res.status(201).json({ user: newUser.toSafeObject() });
 };
 
-const loginUser = async (req: Request<{}, {}, IBaseUser>, res: Response) => {
+const loginUser = async (req: Request<{}, {}, BaseUser>, res: Response) => {
   const { email, password } = req.body;
 
   const user = await UserModel.findUser(email);

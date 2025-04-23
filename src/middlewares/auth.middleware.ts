@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model";
 import { NextFunction, Request, Response } from "express";
-import { IUser } from "../types/user";
+import { User } from "../types/user";
 
 declare module "express-serve-static-core" {
   interface Request {
-    user?: Omit<IUser, "password">;
+    user?: Omit<User, "password">;
   }
 }
 
