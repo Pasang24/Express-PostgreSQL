@@ -1,24 +1,74 @@
 import pool from "../config/db";
-import { NewUser, User } from "../types/user";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { INewUser, IUser } from "../types/user";
 
-const createUser = async (user: NewUser): Promise<User> => {
-  const { name, email, password } = user;
-  const result = await pool.query(
-    `INSERT INTO users (name,email,password) VALUES($1,$2,$3) RETURNING *`,
-    [name, email, password]
-  );
+export default class UserModel implements IUser {
+  constructor(
+    public readonly id: number,
+    public name: string,
+    public email: string,
+    public password: string,
+    public created_at: Date
+  ) {}
 
-  return result.rows[0];
-};
+  //static method to create a new user
+  static async createUser(user: INewUser): Promise<UserModel> {
+    const result = await pool.query<IUser>(
+      `INSERT INTO users (name,email,password) VALUES($1,$2,$3) RETURNING *`,
+      [user.name, user.email, user.password]
+    );
 
-const findUser = async (email: string) => {
-  const result = await pool.query(`SELECT * FROM users WHERE email = $1`, [
-    email,
-  ]);
+    const { id, name, email, password, created_at } = result.rows[0];
+    const newUser = new UserModel(id, name, email, password, created_at);
+    return newUser;
+  }
 
-  return result.rows[0];
-};
+  //static method to find an existing user
+  static async findUser(email: string): Promise<UserModel | null> {
+    const result = await pool.query<IUser>(
+      `SELECT * FROM users WHERE email = $1`,
+      [email]
+    );
 
-const userModel = { createUser, findUser };
+    const user = result.rows[0];
 
-export default userModel;
+    if (user) {
+      const { id, name, email, password, created_at } = user;
+      const newUser = new UserModel(id, name, email, password, created_at);
+      return newUser;
+    }
+
+    return null;
+  }
+
+  //static method to hash password
+  static async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
+
+  //method to compare user password with input password
+  async comparePassword(password: string): Promise<boolean> {
+    return await bcrypt.compare(password, this.password);
+  }
+
+  //method to create a token for session
+  generateAuthToken(): string {
+    const token = jwt.sign(
+      { id: this.id, email: this.email },
+      process.env.JWT_SECRET as jwt.Secret
+    );
+
+    return token;
+  }
+
+  // method to return the user without the hashed password
+  toSafeObject() {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      created_at: this.created_at,
+    };
+  }
+}
