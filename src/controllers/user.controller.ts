@@ -35,6 +35,7 @@ const loginUser = async (req: Request<{}, {}, IBaseUser>, res: Response) => {
     return;
   }
 
+  //similarly if the email matches check if the password matches or not
   const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
@@ -58,6 +59,6 @@ const logoutUser = (req: Request, res: Response) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-const userController = { registerUser, loginUser, logoutUser };
+const UserController = { registerUser, loginUser, logoutUser };
 
-export default userController;
+export default UserController;
