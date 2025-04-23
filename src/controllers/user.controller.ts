@@ -59,6 +59,14 @@ const logoutUser = (req: Request, res: Response) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-const UserController = { registerUser, loginUser, logoutUser };
+const getProfile = (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).send({ message: "Unauthorized" });
+    return;
+  }
+  res.status(201).json({ user: req.user });
+};
+
+const UserController = { registerUser, loginUser, logoutUser, getProfile };
 
 export default UserController;

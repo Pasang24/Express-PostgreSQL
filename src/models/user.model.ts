@@ -63,7 +63,7 @@ export default class UserModel implements IUser {
   }
 
   // method to return the user without the hashed password
-  toSafeObject() {
+  toSafeObject(): Omit<IUser, "password"> {
     return {
       id: this.id,
       name: this.name,
