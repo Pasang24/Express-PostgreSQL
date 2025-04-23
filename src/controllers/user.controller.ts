@@ -44,9 +44,20 @@ const loginUser = async (req: Request<{}, {}, IBaseUser>, res: Response) => {
 
   const token = user.generateAuthToken();
 
-  res.cookie("token", token).status(201).json({ user: user.toSafeObject() });
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.status(200).json({ user: user.toSafeObject() });
 };
 
-const userController = { registerUser, loginUser };
+const logoutUser = (req: Request, res: Response) => {
+  res.clearCookie("token");
+
+  res.status(200).json({ message: "Logged out successfully" });
+};
+
+const userController = { registerUser, loginUser, logoutUser };
 
 export default userController;
