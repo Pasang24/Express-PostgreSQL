@@ -1,12 +1,9 @@
-export interface BaseTicket {
+export interface NewTicket {
   title: string;
   description: string;
   status: "pending" | "completed" | "closed";
-}
-
-export interface NewTicket extends BaseTicket {
-  readonly reporter_id: string;
-  readonly assignee_id: string;
+  readonly reporter_id: number;
+  readonly assignee_id: number;
 }
 
 export interface Ticket extends NewTicket {
