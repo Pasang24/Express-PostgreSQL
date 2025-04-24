@@ -73,13 +73,18 @@ npm run dev
 
 ### 4. Database Setup
 
-Run the `/setup` endpoint to create the `tickets` table:
+The project uses PostgreSQL. You do **not** need to manually create tables.  
+Instead, after starting the server, run the `/setup` endpoint to automatically create the required tables (`users` and `tickets`):
 
 ```sh
-POST http://localhost:3000/setup
+curl -X POST http://localhost:3000/setup
 ```
 
-> Ensure your `users` table exists before running this.
+- This will create both the `users` and `tickets` tables if they do not exist.
+- The `tickets` table has foreign keys referencing the `users` table.
+- You can inspect the table creation logic in [`src/app.ts`](src/app.ts).
+
+> **Note:** Make sure your PostgreSQL server is running and the database specified in `DB_URL` exists.
 
 ## API Endpoints
 
