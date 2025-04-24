@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.post("/generate-ticket", TicketController.generateTicket);
 router.get("/find-ticket/:ticketId", TicketController.findSingleTicket);
+router.get("/get-all-tickets", TicketController.getAllTickets);
 
 export default router;

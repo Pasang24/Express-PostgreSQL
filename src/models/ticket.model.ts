@@ -87,13 +87,25 @@ export default class TicketModel implements Ticket {
     return null;
   }
 
-  findAllTickets({
-    searchTerm,
-    reporter_id,
-    assignee_id,
-  }: {
-    searchTerm?: string;
-    reporter_id?: number;
-    assignee_id?: number;
-  }) {}
+  static async findAllTickets(): Promise<TicketModel[]> {
+    const result = await pool.query<Ticket>(`SELECT * FROM tickets`);
+
+    const tickets = result.rows;
+
+    const newTickets = tickets.map(
+      (ticket) =>
+        new TicketModel(
+          ticket.id,
+          ticket.title,
+          ticket.description,
+          ticket.status,
+          ticket.reporter_id,
+          ticket.assignee_id,
+          ticket.created_at,
+          ticket.updated_at
+        )
+    );
+
+    return newTickets;
+  }
 }

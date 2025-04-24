@@ -35,6 +35,12 @@ const findSingleTicket = async (
   res.status(200).json({ ticket });
 };
 
-const TicketController = { generateTicket, findSingleTicket };
+const getAllTickets = async (req: Request, res: Response) => {
+  const tickets = await TicketModel.findAllTickets();
+
+  res.status(200).json({ tickets });
+};
+
+const TicketController = { generateTicket, findSingleTicket, getAllTickets };
 
 export default TicketController;
