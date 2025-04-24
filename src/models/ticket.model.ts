@@ -10,7 +10,7 @@ export default class TicketModel implements Ticket {
     public readonly reporter_id: number,
     public readonly assignee_id: number,
     public readonly created_at: Date,
-    public updated_at?: Date
+    public updated_at: Date | null
   ) {}
 
   static async createTicket(ticket: NewTicket): Promise<TicketModel> {
@@ -33,6 +33,7 @@ export default class TicketModel implements Ticket {
       created_at,
       assignee_id,
       reporter_id,
+      updated_at,
     } = result.rows[0];
 
     const newTicket = new TicketModel(
@@ -42,7 +43,8 @@ export default class TicketModel implements Ticket {
       status,
       reporter_id,
       assignee_id,
-      created_at
+      created_at,
+      updated_at
     );
 
     return newTicket;

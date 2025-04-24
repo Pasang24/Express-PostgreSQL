@@ -9,5 +9,5 @@ export interface NewTicket {
 export interface Ticket extends NewTicket {
   readonly id: number;
   readonly created_at: Date;
-  updated_at?: Date;
+  updated_at: Date | null;
 }
