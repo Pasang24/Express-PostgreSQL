@@ -48,7 +48,42 @@ export default class TicketModel implements Ticket {
     return newTicket;
   }
 
-  findTicket(ticketId: number) {}
+  static async findTicket(ticketId: number): Promise<TicketModel | null> {
+    const result = await pool.query<Ticket>(
+      `SELECT * FROM tickets WHERE id = $1`,
+      [ticketId]
+    );
+
+    const ticket = result.rows[0];
+
+    if (ticket) {
+      const {
+        id,
+        title,
+        description,
+        status,
+        created_at,
+        assignee_id,
+        reporter_id,
+        updated_at,
+      } = ticket;
+
+      const newTicket = new TicketModel(
+        id,
+        title,
+        description,
+        status,
+        reporter_id,
+        assignee_id,
+        created_at,
+        updated_at
+      );
+
+      return newTicket;
+    }
+
+    return null;
+  }
 
   findAllTickets({
     searchTerm,

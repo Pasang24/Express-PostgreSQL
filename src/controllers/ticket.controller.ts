@@ -19,6 +19,22 @@ const generateTicket = async (
   res.status(201).json({ ticket });
 };
 
-const TicketController = { generateTicket };
+const findSingleTicket = async (
+  req: Request<{ ticketId: string }, {}, {}>,
+  res: Response
+) => {
+  const ticketId = Number(req.params.ticketId);
+
+  const ticket = await TicketModel.findTicket(ticketId);
+
+  if (!ticket) {
+    res.status(404).json({ message: "Ticket not found" });
+    return;
+  }
+
+  res.status(200).json({ ticket });
+};
+
+const TicketController = { generateTicket, findSingleTicket };
 
 export default TicketController;
