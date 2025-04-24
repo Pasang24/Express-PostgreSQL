@@ -26,22 +26,31 @@ app.get("/", (req, res) => {
 });
 
 app.post("/setup", async (req, res) => {
-  const result = await pool.query(`
-  CREATE TABLE tickets (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  description TEXT NOT NULL,
-  status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'closed')),
-  reporter_id INTEGER NOT NULL,
-  assignee_id INTEGER NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP,
-  CONSTRAINT fk_reporter FOREIGN KEY (reporter_id) REFERENCES users(id),
-  CONSTRAINT fk_assignee FOREIGN KEY (assignee_id) REFERENCES users(id)
-);
-`);
+  const userTableQuery = `CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );`;
 
-  res.send(result);
+  const ticketTableQuery = `CREATE TABLE IF NOT EXISTS tickets (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('pending', 'completed', 'closed')),
+    reporter_id INTEGER NOT NULL,
+    assignee_id INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    CONSTRAINT fk_reporter FOREIGN KEY (reporter_id) REFERENCES users(id),
+    CONSTRAINT fk_assignee FOREIGN KEY (assignee_id) REFERENCES users(id)
+  )`;
+
+  await pool.query(userTableQuery);
+  await pool.query(ticketTableQuery);
+
+  res.status(201).json({ message: "Tables created successfully" });
 });
 
 export default app;
