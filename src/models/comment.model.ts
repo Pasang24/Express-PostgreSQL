@@ -42,4 +42,29 @@ export default class CommentModel implements Comment {
 
     return newComment;
   }
+
+  static async findCommentsByTicketId(
+    ticketId: number
+  ): Promise<CommentModel[]> {
+    const result = await pool.query<Comment>(
+      `SELECT * FROM comments WHERE ticket_id = $1`,
+      [ticketId]
+    );
+
+    const comments = result.rows;
+
+    const newComments = comments.map(
+      (comment) =>
+        new CommentModel(
+          comment.id,
+          comment.content,
+          comment.creator_id,
+          comment.parent_comment_id,
+          comment.ticket_id,
+          comment.created_at
+        )
+    );
+
+    return newComments;
+  }
 }

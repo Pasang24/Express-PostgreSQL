@@ -20,6 +20,17 @@ const generateComment = async (
   res.status(201).json({ comment });
 };
 
-const CommentController = { generateComment };
+const getCommentsByTicketId = async (
+  req: Request<{ ticketId: string }, {}, {}>,
+  res: Response
+) => {
+  const ticketId = Number(req.params.ticketId);
+
+  const comments = await CommentModel.findCommentsByTicketId(ticketId);
+
+  res.status(200).json({ comments });
+};
+
+const CommentController = { generateComment, getCommentsByTicketId };
 
 export default CommentController;
