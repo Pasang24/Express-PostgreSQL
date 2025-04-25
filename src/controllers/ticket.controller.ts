@@ -3,15 +3,17 @@ import { NewTicket } from "../types/ticket";
 import TicketModel from "../models/ticket.model";
 
 const generateTicket = async (
-  req: Request<{}, {}, NewTicket>,
+  req: Request<{}, {}, Omit<NewTicket, "status" | "reporter_id">>,
   res: Response
 ) => {
-  const { title, status, description, reporter_id, assignee_id } = req.body;
+  const { title, description, assignee_id } = req.body;
+
+  const reporter_id = Number(req.user?.id);
 
   const ticket = await TicketModel.createTicket({
     title,
     description,
-    status,
+    status: "pending",
     assignee_id,
     reporter_id,
   });
