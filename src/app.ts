@@ -5,7 +5,7 @@ import pool from "./config/db";
 import { AuthMiddleware } from "./middlewares/auth.middleware";
 import UserRoutes from "./routes/user.routes";
 import TicketRoutes from "./routes/ticket.routes";
-
+import CommentRoutes from "./routes/comment.routers";
 const app = express();
 
 const corsOptions: CorsOptions = {
@@ -20,10 +20,7 @@ app.use(cors(corsOptions));
 //routes
 app.use("/user", UserRoutes);
 app.use("/ticket", AuthMiddleware, TicketRoutes);
-
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
+app.use("/comment", AuthMiddleware, CommentRoutes);
 
 app.post("/setup", async (req, res) => {
   const userTableQuery = `CREATE TABLE IF NOT EXISTS users (
@@ -47,8 +44,21 @@ app.post("/setup", async (req, res) => {
     CONSTRAINT fk_assignee FOREIGN KEY (assignee_id) REFERENCES users(id)
   )`;
 
+  const commentTableQuery = `CREATE TABLE IF NOT EXISTS comments (
+    id SERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    creator_id INTEGER NOT NULL,
+    ticket_id INTEGER NOT NULL,
+    parent_comment_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_creator FOREIGN KEY (creator_id) REFERENCES users(id),
+    CONSTRAINT fk_ticket FOREIGN KEY (ticket_id) REFERENCES tickets(id),
+    CONSTRAINT fk_parent_comment FOREIGN KEY (parent_comment_id) REFERENCES comments(id)
+  )`;
+
   await pool.query(userTableQuery);
   await pool.query(ticketTableQuery);
+  await pool.query(commentTableQuery);
 
   res.status(201).json({ message: "Tables created successfully" });
 });
