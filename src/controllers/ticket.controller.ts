@@ -41,6 +41,26 @@ const getAllTickets = async (req: Request, res: Response) => {
   res.status(200).json({ tickets });
 };
 
-const TicketController = { generateTicket, findSingleTicket, getAllTickets };
+const getAllReportedTickets = async (req: Request, res: Response) => {
+  const reporter_id = Number(req.user?.id);
+  const tickets = await TicketModel.findReportedTickets(reporter_id);
+
+  res.status(200).json({ tickets });
+};
+
+const getAllAssignedTickets = async (req: Request, res: Response) => {
+  const assignee_id = Number(req.user?.id);
+  const tickets = await TicketModel.findAssignedTickets(assignee_id);
+
+  res.status(200).json({ tickets });
+};
+
+const TicketController = {
+  generateTicket,
+  findSingleTicket,
+  getAllTickets,
+  getAllReportedTickets,
+  getAllAssignedTickets,
+};
 
 export default TicketController;

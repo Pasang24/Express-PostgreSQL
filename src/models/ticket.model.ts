@@ -108,4 +108,54 @@ export default class TicketModel implements Ticket {
 
     return newTickets;
   }
+
+  static findReportedTickets = async (reporter_id: number) => {
+    const result = await pool.query<Ticket>(
+      `SELECT * FROM tickets WHERE reporter_id = $1`,
+      [reporter_id]
+    );
+
+    const tickets = result.rows;
+
+    const newTickets = tickets.map(
+      (ticket) =>
+        new TicketModel(
+          ticket.id,
+          ticket.title,
+          ticket.description,
+          ticket.status,
+          ticket.reporter_id,
+          ticket.assignee_id,
+          ticket.created_at,
+          ticket.updated_at
+        )
+    );
+
+    return newTickets;
+  };
+
+  static findAssignedTickets = async (assignee_id: number) => {
+    const result = await pool.query<Ticket>(
+      `SELECT * FROM tickets WHERE assignee_id = $1`,
+      [assignee_id]
+    );
+
+    const tickets = result.rows;
+
+    const newTickets = tickets.map(
+      (ticket) =>
+        new TicketModel(
+          ticket.id,
+          ticket.title,
+          ticket.description,
+          ticket.status,
+          ticket.reporter_id,
+          ticket.assignee_id,
+          ticket.created_at,
+          ticket.updated_at
+        )
+    );
+
+    return newTickets;
+  };
 }
