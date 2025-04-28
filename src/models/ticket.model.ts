@@ -1,6 +1,12 @@
 import pool from "../config/db";
 import { NewTicket, Ticket } from "../types/ticket";
 
+interface TabQueries {
+  newest: string;
+  active: string;
+  extended: string;
+}
+
 export default class TicketModel implements Ticket {
   constructor(
     public readonly id: number,
@@ -87,8 +93,18 @@ export default class TicketModel implements Ticket {
     return null;
   }
 
-  static async findAllTickets(): Promise<TicketModel[]> {
-    const result = await pool.query<Ticket>(`SELECT * FROM tickets`);
+  static async findAllTickets(tab: string): Promise<TicketModel[]> {
+    const tabQueries: TabQueries = {
+      newest: "",
+      active: "WHERE status = 'pending'",
+      extended: "WHERE status = 'completed'",
+    };
+
+    const result = await pool.query<Ticket>(
+      `SELECT * FROM tickets ${
+        tabQueries[tab as keyof TabQueries]
+      } ORDER BY created_at DESC`
+    );
 
     const tickets = result.rows;
 

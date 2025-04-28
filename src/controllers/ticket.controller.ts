@@ -37,8 +37,14 @@ const findSingleTicket = async (
   res.status(200).json({ ticket });
 };
 
-const getAllTickets = async (req: Request, res: Response) => {
-  const tickets = await TicketModel.findAllTickets();
+const getAllTickets = async (
+  req: Request<{}, {}, {}, { tab: string }>,
+  res: Response
+) => {
+  const { tab } = req.query;
+  console.log(tab);
+
+  const tickets = await TicketModel.findAllTickets(tab);
 
   res.status(200).json({ tickets });
 };
