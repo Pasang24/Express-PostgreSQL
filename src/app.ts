@@ -9,13 +9,15 @@ import CommentRoutes from "./routes/comment.routers";
 const app = express();
 
 const corsOptions: CorsOptions = {
-  origin: "http://localhost:5172",
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
 };
 
 //middlewares
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors(corsOptions));
 
 //routes
 app.use("/user", UserRoutes);
