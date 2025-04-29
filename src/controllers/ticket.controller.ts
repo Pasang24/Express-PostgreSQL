@@ -44,9 +44,11 @@ const getAllTickets = async (
   const { tab } = req.query;
   console.log(tab);
 
-  const tickets = await TicketModel.findAllTickets(tab);
+  const { total, newTickets: tickets } = await TicketModel.findAllTickets(tab);
 
-  res.status(200).json({ tickets });
+  console.log(typeof total);
+
+  res.status(200).json({ total, tickets });
 };
 
 const getAllReportedTickets = async (req: Request, res: Response) => {

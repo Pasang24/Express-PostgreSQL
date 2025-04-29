@@ -93,20 +93,30 @@ export default class TicketModel implements Ticket {
     return null;
   }
 
-  static async findAllTickets(tab: string): Promise<TicketModel[]> {
+  static async findAllTickets(
+    tab: string
+  ): Promise<{ total: number; newTickets: TicketModel[] }> {
     const tabQueries: TabQueries = {
       newest: "",
       active: "WHERE status = 'pending'",
       extended: "WHERE status = 'completed'",
     };
 
-    const result = await pool.query<Ticket>(
-      `SELECT * FROM tickets ${
-        tabQueries[tab as keyof TabQueries]
-      } ORDER BY created_at DESC`
-    );
+    const [ticketsResult, totalResult] = await Promise.all([
+      await pool.query<Ticket>(
+        `SELECT * FROM tickets ${
+          tabQueries[tab as keyof TabQueries]
+        } ORDER BY created_at DESC`
+      ),
+      await pool.query<{ total: string }>(
+        `SELECT COUNT(id) as total FROM tickets ${
+          tabQueries[tab as keyof TabQueries]
+        }`
+      ),
+    ]);
 
-    const tickets = result.rows;
+    const tickets = ticketsResult.rows;
+    const { total } = totalResult.rows[0];
 
     const newTickets = tickets.map(
       (ticket) =>
@@ -122,7 +132,7 @@ export default class TicketModel implements Ticket {
         )
     );
 
-    return newTickets;
+    return { total: Number(total), newTickets };
   }
 
   static findReportedTickets = async (reporter_id: number) => {
