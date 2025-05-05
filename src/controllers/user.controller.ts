@@ -48,6 +48,7 @@ const loginUser = async (req: Request<{}, {}, BaseUser>, res: Response) => {
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
   });
 
   res.status(200).json({ user: user.toSafeObject() });
