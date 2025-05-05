@@ -9,7 +9,7 @@ import CommentRoutes from "./routes/comment.routers";
 const app = express();
 
 const corsOptions: CorsOptions = {
-  origin: "http://localhost:3000",
+  origin: ["http://localhost:3000", "https://issue-tracker10.vercel.app"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 };
