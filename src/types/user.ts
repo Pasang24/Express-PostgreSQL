@@ -1,7 +1,6 @@
 // this interface is used for login using email and password
 export interface BaseUser {
   email: string;
-  password: string;
 }
 
 // this interface is used for registering new user with name, email, password

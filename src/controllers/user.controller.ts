@@ -1,46 +1,74 @@
 import { Request, Response } from "express";
-import { BaseUser, NewUser } from "../types/user";
 import UserModel from "../models/user.model";
 
-const registerUser = async (req: Request<{}, {}, NewUser>, res: Response) => {
-  const { name, email, password } = req.body;
+const registerUser = async (req: Request, res: Response) => {
+  const redirectUrl =
+    "https://accounts.google.com/o/oauth2/v2/auth?" +
+    new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID as string,
+      redirect_uri: `${process.env.BACKEND_URL}/user/register/callback`,
+      response_type: "code",
+      scope: "email profile",
+    });
 
-  //checking if user with same email already exists
-  const userAlreadyExists = await UserModel.findUser(email);
-
-  if (userAlreadyExists) {
-    res.status(400).json({ message: "User Already Exists" });
-    return;
-  }
-
-  const hashedPassword = await UserModel.hashPassword(password);
-
-  const newUser = await UserModel.createUser({
-    name,
-    email,
-    password: hashedPassword,
-  });
-
-  res.status(201).json({ user: newUser.toSafeObject() });
+  res.redirect(redirectUrl);
 };
 
-const loginUser = async (req: Request<{}, {}, BaseUser>, res: Response) => {
-  const { email, password } = req.body;
+const registerUserCallback = async (
+  req: Request<{}, {}, {}, { code?: string; error?: string }>,
+  res: Response
+) => {
+  const { code, error } = req.query;
 
-  const user = await UserModel.findUser(email);
-
-  //if email didn't match then return Invalid Email or Password
-  if (!user) {
-    res.status(400).json({ message: "Invalid Email or Password" });
+  if (error) {
+    res.redirect(`${process.env.FRONTEND_URL}/login`);
     return;
   }
 
-  //similarly if the email matches check if the password matches or not
-  const isMatch = await user.comparePassword(password);
-
-  if (!isMatch) {
-    res.status(400).json({ message: "Invalid Email or Password" });
+  if (!code) {
+    res.status(400).json({ message: "Missing Authorization code" });
     return;
+  }
+
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID as string,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET as string,
+      redirect_uri: `${process.env.BACKEND_URL}/user/register/callback`,
+      grant_type: "authorization_code",
+    }),
+  });
+
+  const tokenData = await tokenRes.json();
+
+  if (!tokenRes.ok || "error" in tokenData) {
+    res.status(400).json({ message: "Invalid or expired code" });
+  }
+
+  const accessToken = tokenData.access_token;
+
+  const profileRes = await fetch(
+    "https://www.googleapis.com/oauth2/v2/userinfo",
+    {
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  const profile = await profileRes.json();
+
+  //checking if user with same email already exists
+  let user = await UserModel.findUser(profile.email);
+
+  if (!user) {
+    user = await UserModel.createUser({
+      name: profile.name,
+      email: profile.email,
+    });
   }
 
   const token = user.generateAuthToken();
@@ -48,10 +76,9 @@ const loginUser = async (req: Request<{}, {}, BaseUser>, res: Response) => {
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
   });
 
-  res.status(200).json({ user: user.toSafeObject() });
+  res.redirect(`${process.env.FRONTEND_URL}`);
 };
 
 const logoutUser = (req: Request, res: Response) => {
@@ -68,6 +95,11 @@ const getProfile = (req: Request, res: Response) => {
   res.status(201).json({ user: req.user });
 };
 
-const UserController = { registerUser, loginUser, logoutUser, getProfile };
+const UserController = {
+  registerUser,
+  registerUserCallback,
+  logoutUser,
+  getProfile,
+};
 
 export default UserController;

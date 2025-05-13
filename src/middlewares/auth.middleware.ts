@@ -38,6 +38,6 @@ export const AuthMiddleware = async (
     return;
   }
 
-  req.user = user.toSafeObject();
+  req.user = user;
   next();
 };

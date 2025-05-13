@@ -1,5 +1,4 @@
 import pool from "../config/db";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { NewUser, User } from "../types/user";
 
@@ -8,19 +7,18 @@ export default class UserModel implements User {
     public readonly id: number,
     public name: string,
     public email: string,
-    public password: string,
     public created_at: Date
   ) {}
 
   //static method to create a new user
   static async createUser(user: NewUser): Promise<UserModel> {
     const result = await pool.query<User>(
-      `INSERT INTO users (name,email,password) VALUES($1,$2,$3) RETURNING *`,
-      [user.name, user.email, user.password]
+      `INSERT INTO users (name,email) VALUES($1,$2) RETURNING *`,
+      [user.name, user.email]
     );
 
-    const { id, name, email, password, created_at } = result.rows[0];
-    const newUser = new UserModel(id, name, email, password, created_at);
+    const { id, name, email, created_at } = result.rows[0];
+    const newUser = new UserModel(id, name, email, created_at);
     return newUser;
   }
 
@@ -34,22 +32,12 @@ export default class UserModel implements User {
     const user = result.rows[0];
 
     if (user) {
-      const { id, name, email, password, created_at } = user;
-      const newUser = new UserModel(id, name, email, password, created_at);
+      const { id, name, email, created_at } = user;
+      const newUser = new UserModel(id, name, email, created_at);
       return newUser;
     }
 
     return null;
-  }
-
-  //static method to hash password
-  static async hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 10);
-  }
-
-  //method to compare user password with input password
-  async comparePassword(password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.password);
   }
 
   //method to create a token for session
@@ -60,15 +48,5 @@ export default class UserModel implements User {
     );
 
     return token;
-  }
-
-  // method to return the user without the hashed password
-  toSafeObject(): Omit<User, "password"> {
-    return {
-      id: this.id,
-      name: this.name,
-      email: this.email,
-      created_at: this.created_at,
-    };
   }
 }
